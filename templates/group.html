@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block css %}
+div.breadcrumbs {
+    margin-bottom: 20px;
+    margin-top: 15px;
+    font-size: 1.3em;
+}
+
+div.breadcrumbs > .current {
+    font-weight: bold;
+}
+
+tr:hover {
+    background-color: #f2f2f2;
+}
+
+{% endblock %}
+
+{% block title %}{{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="breadcrumbs">
+        <a href="./../">Lists</a> >
+        <span class="current">{{ group.name }}</span>
+    </div>
+
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for thread in threads %}
+                <tr>
+                    <td><span class="badge badge-primary">{{ thread.message_count }}</span></td>
+                    <td><a href="./../threads/{{ thread.id }}">{{ thread.subject }}</a></td>
+                    <td><span class="badge badge-primary">{{ thread.updated.strftime('%Y-%m-%d %H:%M') }}</span></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

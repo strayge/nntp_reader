@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block css %}
+pre.message {
+    margin: 0;
+}
+
+pre.quote {
+    background-color: #cce3fa;
+}
+
+pre.code {
+    background-color: #d8d8d8;
+}
+
+p.head {
+    margin: 0;
+}
+
+#message-list {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 350px;
+    height: 100%;
+    overflow-y: scroll;
+    padding: 10px;
+    font-size: 0.9em;
+    background-color: #f2f2f2;
+}
+
+#message-list a {
+    color: #333;
+    display: block;
+    margin-bottom: 13px;
+    text-decoration: none;
+}
+
+#message-list a:hover {
+    color: #000;
+    font-weight: bold;
+    background-color: #e6e6e6;
+}
+
+div.message-list-line1 {
+    display: flex;
+    justify-content: space-between;
+}
+
+div.message-list-subject {
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    overflow-x: hidden;
+}
+
+div.message-list-author {
+    font-weight: bold;
+    min-width: 100px;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    overflow-x: hidden;
+}
+
+div.breadcrumbs {
+    padding-top: 15px;
+    padding-left: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    font-size: 1.3em;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f2f4f6;
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: 0.25rem;
+}
+
+div.breadcrumbs > .current {
+    font-weight: bold;
+}
+
+{% endblock %}
+
+{% block title %}{{ thread.subject }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div id="message-list">
+        {% for message in messages %}
+            <a href="#message-{{ message.id }}">
+                <div class="message-list-line1">
+                    <div class="message-list-author">{{ message.sender.split('<')[0].replace('"', '') }}</div>
+                    <div class="message-list-date">{{ message.created.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+                <div class="message-list-line2">
+                    <div class="message-list-subject">{{ message.subject[:50] }}</div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+    <div class="message-content">
+
+        <div class="breadcrumbs">
+            <a href="./../">Lists</a> >
+            <a href="./../groups/{{ thread.group.id }}">{{ thread.group.name }}</a> >
+            <span class="current">{{ thread.subject }}</span>
+        </div>
+
+        {% for message in messages %}
+            <div class="card mb-3" id="message-{{ message.id }}">
+                <div class="card-header">
+                    <p class="head date">{{ message.created }}</p>
+                    <p class="head author" title="{{ message.sender }}">{{ message.sender }}</p>
+                    <p class="head subject">{{ message.subject }}</p>
+                </div>
+                <div class="card-body">
+                    {% for line in message.body.splitlines() %}
+                        {% if line.startswith('>') %}
+                            <pre class="message quote">{{ line }}</pre>
+                        {% elif line.startswith('+') or line.startswith('-') or line.startswith('@@') or line.startswith(' ') or line.startswith('diff --git') or line.startswith('index ') %}
+                            <pre class="message code">{{ line }}</pre>
+                        {% else %}
+                            <pre class="message text">{{ line }}</pre>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="card-footer">
+                    <p class="updated"><span class="badge">{{ message.updated }}</span></p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

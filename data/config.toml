@@ -1,0 +1,7 @@
+groups = [
+    "nntp.lore.kernel.org/org.kernel.vger.rust-for-linux",
+    "nntp.lore.kernel.org/dev.linux.lists.asahi",
+]
+fetch_new_count = 1000
+fetch_count = 200
+fetch_interval_minutes = 720

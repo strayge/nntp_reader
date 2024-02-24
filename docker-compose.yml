@@ -1,0 +1,19 @@
+version: "2.4"
+services:
+  nntp-web:
+    image: nntp_web
+    build: .
+    container_name: nntp_web
+    hostname: nntp_web
+    volumes:
+      - ./data:/app/data
+    # ports:
+    #   - "8080:8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/ | grep title"]
+      interval: 1m

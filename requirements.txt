@@ -1,0 +1,4 @@
+tortoise-orm
+uvicorn
+fastapi
+Jinja2

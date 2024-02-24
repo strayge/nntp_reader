@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+addopts = "--doctest-modules -s -l"
+asyncio_mode = "auto"
+
+[tool.flake8]
+max-line-length = 120
+ignore = ["E501"]
