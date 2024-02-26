@@ -7,7 +7,7 @@ from fastapi.templating import Jinja2Templates
 
 from .config import Config
 from .db import Group, Message, Thread
-from .parser import update_messages
+from .fetcher import update_messages
 
 app = FastAPI(openapi_url=None)
 config = Config()

@@ -27,7 +27,7 @@ async def set_threads_for_messages(messages: list[Message]) -> list[Thread]:
             if message.reply_to in thread_by_msg_id:
                 thread = thread_by_msg_id[message.reply_to]
             elif prev_message := await Message.filter(msg_id=message.reply_to).first():
-                thread = Thread.get(id=prev_message.thread_id)
+                thread = await Thread.get(id=prev_message.thread_id)
         if not thread and message.subject_normalized in thread_by_subject:
             thread = thread_by_subject[message.subject_normalized]
         if not thread:
@@ -87,6 +87,10 @@ async def update_messages(groups_urls: list[str], fetch_new: int, fetch_old: int
         try:
             nntp = AsyncNNTP(server, debug=False)
             await nntp.connect()
+        except Exception as e:
+            logging.error(f'Error connection to {server}: {e!r}')
+            continue
+        try:
             for group_name in groups:
                 db_group = await get_or_create_group(group_name)
                 last_msg = await Message.filter(group=db_group).order_by('-created').first()
@@ -129,5 +133,5 @@ async def update_messages(groups_urls: list[str], fetch_new: int, fetch_old: int
                 else:
                     logging.info(f'No new messages for {group_name}')
         except Exception as e:
-            logging.error(f'Error connecting to {server}: {e}')
+            logging.exception(f'Error fetching from {server}: {e!r}')
             raise
