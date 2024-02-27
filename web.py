@@ -1,5 +1,7 @@
 import asyncio
+import http
 import logging
+import time
 
 import uvicorn
 from fastapi import FastAPI, Request
@@ -23,9 +25,7 @@ async def read_root(request: Request):
 @app.get("/groups/{group_id}")
 async def read_group(request: Request, group_id: str):
     group = await Group.get(id=group_id)
-    threads = await group.threads.order_by("-updated").limit(100).prefetch_related("messages")
-    for thread in threads:
-        thread.message_count = await Message.filter(thread=thread).count()
+    threads = await group.threads.order_by("-updated").limit(50).prefetch_related("messages")
     return templates.TemplateResponse("group.html", {"request": request, "group": group, "threads": threads})
 
 
@@ -53,8 +53,28 @@ async def scheduled_update() -> None:
         await asyncio.sleep(config.fetch_interval_minutes * 60)
 
 
+@app.middleware("http")
+async def uvicorn_log_middleware(request: Request, call_next):
+    start_time = time.monotonic()
+    response = await call_next(request)
+    end_time = time.monotonic()
+    logger = logging.getLogger("uvicorn")
+    client = f'{request.client.host}:{request.client.port}'
+    http_version = request.scope.get("http_version")
+    method = request.method
+    path = request.url.path
+    code = response.status_code
+    process_time = f'{(end_time - start_time):.3f}'
+    try:
+        code_phrase = http.HTTPStatus(code).phrase
+    except ValueError:
+        code_phrase = ""
+    logger.info(f'{client} - "{method} {path} HTTP/{http_version}" {code} {code_phrase} {process_time}')
+    return response
+
+
 async def run_web() -> None:
     _ = asyncio.create_task(scheduled_update())
-    uvicorn_config = uvicorn.Config(app, host="0.0.0.0", port=8080)
+    uvicorn_config = uvicorn.Config(app, host="0.0.0.0", port=8080, access_log=False, log_config=None)
     uvicorn_server = uvicorn.Server(uvicorn_config)
     await uvicorn_server.serve()

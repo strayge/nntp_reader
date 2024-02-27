@@ -18,16 +18,16 @@ async def close_db() -> None:
 
 class Group(Model):
     id = fields.UUIDField(pk=True)
-    name = fields.TextField()
-    updated = fields.DatetimeField()
+    name = fields.CharField(max_length=256)
+    updated = fields.DatetimeField(index=True)
 
 
 class Thread(Model):
     id = fields.UUIDField(pk=True)
     group: ForeignKeyRelation['Group'] = fields.ForeignKeyField('models.Group', related_name='threads')
-    created = fields.DatetimeField()
-    updated = fields.DatetimeField()
-    subject = fields.TextField()
+    created = fields.DatetimeField(index=True)
+    updated = fields.DatetimeField(index=True)
+    subject = fields.CharField(max_length=256, index=True)
 
 
 class Message(Model):
@@ -35,13 +35,13 @@ class Message(Model):
     group: ForeignKeyRelation['Group'] = fields.ForeignKeyField('models.Group', related_name='messages')
     thread: ForeignKeyRelation['Thread'] = fields.ForeignKeyField('models.Thread', related_name='messages', null=True)
     reply_to = fields.CharField(max_length=256, null=True)
-    msg_id = fields.CharField(max_length=256, unique=True)
-    sender = fields.TextField()
-    subject = fields.TextField()
-    subject_normalized = fields.TextField()
+    msg_id = fields.CharField(max_length=256, unique=True, index=True)
+    sender = fields.CharField(max_length=256)
+    subject = fields.CharField(max_length=256)
+    subject_normalized = fields.CharField(max_length=256)
     headers = fields.TextField()
     body = fields.TextField()
-    created = fields.DatetimeField()
+    created = fields.DatetimeField(index=True)
 
     def __repr__(self):
         return f'<Message {self.id}>'
@@ -50,7 +50,7 @@ class Message(Model):
 class Reference(Model):
     id = fields.UUIDField(pk=True)
     message: ForeignKeyRelation['Message'] = fields.ForeignKeyField('models.Message', related_name='references')
-    ref_msg_id = fields.TextField()
+    ref_msg_id = fields.CharField(max_length=256)
 
     def __repr__(self):
         return f'<Reference {self.id}>'

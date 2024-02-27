@@ -37,7 +37,7 @@ tr:hover {
         <tbody>
             {% for thread in threads %}
                 <tr>
-                    <td><span class="badge badge-primary">{{ thread.message_count }}</span></td>
+                    <td><span class="badge badge-primary">{{ thread.messages|length }}</span></td>
                     <td><a href="./../threads/{{ thread.id }}">{{ thread.subject }}</a></td>
                     <td><span class="badge badge-primary">{{ thread.updated.strftime('%Y-%m-%d %H:%M') }}</span></td>
                 </tr>
