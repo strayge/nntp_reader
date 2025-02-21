@@ -25,7 +25,7 @@ async def read_root(request: Request):
 @app.get("/groups/{group_id}")
 async def read_group(request: Request, group_id: str):
     group = await Group.get(id=group_id)
-    threads = await group.threads.order_by("-updated").limit(50).prefetch_related("messages")
+    threads = await group.threads.order_by("-updated").limit(100).prefetch_related("messages")
     return templates.TemplateResponse("group.html", {"request": request, "group": group, "threads": threads})
 
 
