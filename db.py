@@ -20,6 +20,8 @@ class Group(Model):
     id = fields.UUIDField(pk=True)
     name = fields.CharField(max_length=256)
     updated = fields.DatetimeField(index=True)
+    threads: fields.ReverseRelation['Thread']
+    messages: fields.ReverseRelation['Message']
 
 
 class Thread(Model):
@@ -28,12 +30,14 @@ class Thread(Model):
     created = fields.DatetimeField(index=True)
     updated = fields.DatetimeField(index=True)
     subject = fields.CharField(max_length=256, index=True)
+    messages: fields.ReverseRelation['Message']
+    references: fields.ReverseRelation['Reference']
 
 
 class Message(Model):
     id = fields.UUIDField(pk=True)
     group: ForeignKeyRelation['Group'] = fields.ForeignKeyField('models.Group', related_name='messages')
-    thread: ForeignKeyRelation['Thread'] = fields.ForeignKeyField('models.Thread', related_name='messages', null=True)
+    thread: ForeignKeyRelation['Thread'] | None = fields.ForeignKeyField('models.Thread', related_name='messages', null=True)
     reply_to = fields.CharField(max_length=256, null=True)
     msg_id = fields.CharField(max_length=256, unique=True, index=True)
     sender = fields.CharField(max_length=256)

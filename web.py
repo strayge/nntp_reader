@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 
 from .config import Config
-from .db import Group, Message, Thread
+from .db import Group, Thread
 from .fetcher import update_messages
 
 app = FastAPI(openapi_url=None)
@@ -59,7 +59,7 @@ async def uvicorn_log_middleware(request: Request, call_next):
     response = await call_next(request)
     end_time = time.monotonic()
     logger = logging.getLogger("uvicorn")
-    client = f'{request.client.host}:{request.client.port}'
+    client = f'{request.client.host}:{request.client.port}' if request.client else 'unknown'
     http_version = request.scope.get("http_version")
     method = request.method
     path = request.url.path
