@@ -79,7 +79,14 @@ async def uvicorn_log_middleware(request: Request, call_next):
 
 
 async def run_web() -> None:
-    _ = asyncio.create_task(scheduled_update())
+    bg_task = asyncio.create_task(scheduled_update())
     uvicorn_config = uvicorn.Config(app, host="0.0.0.0", port=8080, access_log=False, log_config=None)
     uvicorn_server = uvicorn.Server(uvicorn_config)
-    await uvicorn_server.serve()
+    try:
+        await uvicorn_server.serve()
+    finally:
+        bg_task.cancel()
+        try:
+            await bg_task
+        except asyncio.CancelledError:
+            pass
