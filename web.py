@@ -1,6 +1,7 @@
 import asyncio
 import http
 import logging
+import quopri
 import time
 
 import uvicorn
@@ -34,10 +35,10 @@ async def read_thread(request: Request, thread_id: str):
     thread = await Thread.get(id=thread_id).prefetch_related("group")
     messages = await thread.messages.order_by("created")
     for message in messages:
-        message.body = message.body.replace("=\n", "")
-        message.body = message.body.replace("=C2=A0", " ")
-        for num in (0x20, 0x3D, 0x2E):
-            message.body = message.body.replace(f"={num:02X}", chr(num))
+        if 'Content-Transfer-Encoding: ' in message.headers:
+            encoding = message.headers.split("Content-Transfer-Encoding: ")[1].split("\n")[0]
+            if encoding == 'quoted-printable':
+                message.body = quopri.decodestring(message.body).decode()
     return templates.TemplateResponse("thread.html", {"request": request, "thread": thread, "messages": messages})
 
 
