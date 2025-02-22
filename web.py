@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import http
 import logging
 import quopri
@@ -39,6 +40,8 @@ async def read_thread(request: Request, thread_id: str):
             encoding = message.headers.split("Content-Transfer-Encoding: ")[1].split("\n")[0]
             if encoding == 'quoted-printable':
                 message.body = quopri.decodestring(message.body).decode()
+            elif encoding == 'base64':
+                message.body = base64.b64decode(message.body).decode()
     return templates.TemplateResponse("thread.html", {"request": request, "thread": thread, "messages": messages})
 
 
