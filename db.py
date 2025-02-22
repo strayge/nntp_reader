@@ -3,10 +3,10 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 
-async def init_db() -> None:
+async def init_db(package_name: str) -> None:
     await Tortoise.init(
         db_url='sqlite://data/db.sqlite3',
-        modules={'models': ['nntp_reader.db']}
+        modules={'models': [f'{package_name}.db']}
     )
     await Tortoise.generate_schemas()
     await Group.all().count()  # test connection
