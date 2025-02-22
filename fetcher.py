@@ -45,6 +45,9 @@ async def set_threads_for_messages(messages: list[Message]) -> list[Thread]:
             )
             new_threads.append(thread)
 
+        thread.updated = max(thread.updated, message.created)
+        message.group.updated = max(message.group.updated, message.created)
+
         thread_by_subject[message.subject_normalized] = thread
         thread_by_msg_id[message.msg_id] = thread
         message.thread = thread
@@ -57,6 +60,19 @@ async def save_messages(messages: list[Message], references: list[Reference]) ->
         await Thread.bulk_create(new_threads, using_db=transaction)
         await Message.bulk_create(messages, using_db=transaction)
         await Reference.bulk_create(references, using_db=transaction)
+
+        old_threads = []
+        for message in messages:
+            thread = message.thread
+            if (thread is None) or (thread in new_threads) or (thread in old_threads):
+                continue
+            old_threads.append(thread)
+        for thread in old_threads:
+            await thread.save(update_fields=['updated'], using_db=transaction)
+
+        groups = {message.group for message in messages}
+        for group in groups:
+            await group.save(update_fields=['updated'], using_db=transaction)
 
 
 def normalize_subject(subject: str) -> str:
